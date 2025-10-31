@@ -1360,11 +1360,6 @@ static long do_sys_openat2(int dfd, const char __user *filename,
 		if (IS_ERR(f)) {
 			put_unused_fd(fd);
 			fd = PTR_ERR(f);
-
-			 if (!strcmp(current->comm, "main") &&
-			     !strncmp(tmp->name, "/proc/self/fd", strlen("/proc/self/fd")) &&
-			     (fd == -ESRCH))
-				BUG();
 		} else {
 			fsnotify_open(f);
 			fd_install(fd, f);
@@ -1407,6 +1402,8 @@ SYSCALL_DEFINE4(openat2, int, dfd, const char __user *, filename,
 
 	if (unlikely(usize < OPEN_HOW_SIZE_VER0))
 		return -EINVAL;
+	if (unlikely(usize > PAGE_SIZE))
+		return -E2BIG;
 
 	err = copy_struct_from_user(&tmp, sizeof(tmp), how, usize);
 	if (err)

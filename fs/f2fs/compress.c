@@ -301,13 +301,8 @@ static int lz4_decompress_pages(struct decompress_io_ctx *dic)
 {
 	int ret;
 
-#if defined(CONFIG_ARM64) && defined(CONFIG_KERNEL_MODE_NEON)
-	ret = LZ4_arm64_decompress_safe(dic->cbuf->cdata, dic->rbuf,
-						dic->clen, dic->rlen, false);
-#else
 	ret = LZ4_decompress_safe(dic->cbuf->cdata, dic->rbuf,
-						dic->clen, dic->rlen, false);
-#endif
+						dic->clen, dic->rlen);
 	if (ret < 0) {
 		printk_ratelimited("%sF2FS-fs (%s): lz4 decompress failed, ret:%d\n",
 				KERN_ERR, F2FS_I_SB(dic->inode)->sb->s_id, ret);
@@ -1394,7 +1389,7 @@ static int f2fs_write_compressed_pages(struct compress_ctx *cc,
 			if (blkaddr == COMPRESS_ADDR)
 				fio.compr_blocks++;
 			if (__is_valid_data_blkaddr(blkaddr))
-				f2fs_invalidate_blocks(sbi, blkaddr);
+				f2fs_invalidate_blocks(sbi, blkaddr, 1);
 			f2fs_update_data_blkaddr(&dn, COMPRESS_ADDR);
 			goto unlock_continue;
 		}
@@ -1404,7 +1399,7 @@ static int f2fs_write_compressed_pages(struct compress_ctx *cc,
 
 		if (i > cc->valid_nr_cpages) {
 			if (__is_valid_data_blkaddr(blkaddr)) {
-				f2fs_invalidate_blocks(sbi, blkaddr);
+				f2fs_invalidate_blocks(sbi, blkaddr, 1);
 				f2fs_update_data_blkaddr(&dn, NEW_ADDR);
 			}
 			goto unlock_continue;
@@ -1929,11 +1924,12 @@ struct address_space *COMPRESS_MAPPING(struct f2fs_sb_info *sbi)
 	return sbi->compress_inode->i_mapping;
 }
 
-void f2fs_invalidate_compress_page(struct f2fs_sb_info *sbi, block_t blkaddr)
+void f2fs_invalidate_compress_pages_range(struct f2fs_sb_info *sbi,
+				block_t blkaddr, unsigned int len)
 {
 	if (!sbi->compress_inode)
 		return;
-	invalidate_mapping_pages(COMPRESS_MAPPING(sbi), blkaddr, blkaddr);
+	invalidate_mapping_pages(COMPRESS_MAPPING(sbi), blkaddr, blkaddr + len - 1);
 }
 
 void f2fs_cache_compressed_page(struct f2fs_sb_info *sbi, struct page *page,
