@@ -77,9 +77,10 @@ static void show_mark_fhandle(struct seq_file *m, struct inode *inode)
 static void inotify_fdinfo(struct seq_file *m, struct fsnotify_mark *mark,
 			   struct file *file)
 {
-	(void)file;
 	struct inotify_inode_mark *inode_mark;
 	struct inode *inode;
+
+	(void)file;
 
 	if (mark->connector->type != FSNOTIFY_OBJ_TYPE_INODE)
 		return;
@@ -108,9 +109,10 @@ void inotify_show_fdinfo(struct seq_file *m, struct file *f)
 static void fanotify_fdinfo(struct seq_file *m, struct fsnotify_mark *mark,
 			    struct file *file)
 {
-	(void)file;
 	unsigned int mflags = fanotify_mark_user_flags(mark);
 	struct inode *inode;
+
+	(void)file;
 
 	if (mark->connector->type == FSNOTIFY_OBJ_TYPE_INODE) {
 		inode = igrab(fsnotify_conn_inode(mark->connector));
