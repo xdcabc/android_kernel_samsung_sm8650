@@ -1,3 +1,5 @@
+#if defined(CONFIG_TRACEPOINTS) && defined(CONFIG_ANDROID_VENDOR_HOOKS)
+
 #include <linux/gfp.h>
 #include <trace/hooks/iommu.h>
 #include "sec_mm.h"
@@ -21,3 +23,11 @@ void exit_sec_mm_tune(void)
 	unregister_trace_android_vh_adjust_alloc_flags(
 			sec_mm_adjust_alloc_flags, NULL);
 }
+
+#else /* !CONFIG_TRACEPOINTS || !CONFIG_ANDROID_VENDOR_HOOKS */
+
+void init_sec_mm_tune(void) {}
+
+void exit_sec_mm_tune(void) {}
+
+#endif
