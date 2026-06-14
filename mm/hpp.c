@@ -169,7 +169,7 @@ unsigned long total_hugepage_pool_pages(void)
 	if (hpp_state == HPP_OFF)
 		return 0;
 
-	return get_pool_pages_under_zone(MAX_NR_ZONES - 1, true);
+	return get_pool_pages_under_zone(MAX_NR_ZONES - 1, false);
 }
 
 static inline unsigned long zone_available_simple(struct zone *zone)
